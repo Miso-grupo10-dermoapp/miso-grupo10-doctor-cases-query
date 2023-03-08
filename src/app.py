@@ -7,7 +7,7 @@ ENV_TABLE_NAME = "dermoapp-patient-cases"
 
 def handler(event, context):
     try:
-        print("lambda execution with context {0}".format(str(context)))
+        print("lambda execution with contexts {0}".format(str(context)))
         response = get_item()
         return return_status_ok(response)
     except Exception as err:
