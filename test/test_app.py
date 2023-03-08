@@ -53,16 +53,32 @@ def load_table(data_table):
         'number_of_lessions': 'lesson_test',
         'distributions': 'test',
         'color': 'test-red',
-        'patient_id': '123'
+        'patient_id': '123',
+        'status': 'created'
+    }
+    table.put_item(Item=body)
+
+@pytest.fixture
+def load_non_available_table(data_table):
+    client = boto3.resource("dynamodb")
+    table = client.Table(app.ENV_TABLE_NAME)
+    body = {
+        'case_id': '123',
+        'injury_type': 'test_inj',
+        'shape': 'shape-test',
+        'number_of_lessions': 'lesson_test',
+        'distributions': 'test',
+        'color': 'test-red',
+        'patient_id': '123',
+        'status': 'finished'
     }
     table.put_item(Item=body)
 def test_givenValidInputRequestThenReturn200AndValidArray(lambda_environment, load_table):
     event = {
-        "resource": "/patient/{patient_id}/case/{case_id}",
-        "path": "/patient/123/case/123",
+        "resource": "/doctor/cases",
+        "path": "doctor/cases",
         "httpMethod": "GET",
         "pathParameters": {
-            "patient_id": "123"
         },
         "isBase64Encoded": False
     }
@@ -74,13 +90,12 @@ def test_givenValidInputRequestThenReturn200AndValidArray(lambda_environment, lo
     for item in data:
         assert item['patient_id'] == '123'
 
-def test_givenValidInputRequestThenReturn200AndEmptyArray(lambda_environment, load_table):
+def test_givenValidInputRequestThenReturn200AndEmptyArray(lambda_environment, load_non_available_table):
     event = {
-        "resource": "/patient/{patient_id}/case/{case_id}",
-        "path": "/patient/123/case/123",
+        "resource": "/doctor/cases",
+        "path": "doctor/cases",
         "httpMethod": "GET",
         "pathParameters": {
-            "patient_id": "1234"
         },
         "isBase64Encoded": False
     }
@@ -90,29 +105,12 @@ def test_givenValidInputRequestThenReturn200AndEmptyArray(lambda_environment, lo
     data = json.loads(lambdaResponse['body'])
     assert len(data) == 0
 
-
-def test_givenMissingQueryParamsOnRequestThenReturnError412(lambda_environment, data_table):
-    event = {
-        "resource": "/patient/{patient_id}/case/{case_id}",
-        "path": "/patient/123/case/123",
-        "httpMethod": "GET",
-        "pathParameters": {
-        },
-        "isBase64Encoded": False
-    }
-    lambdaResponse = app.handler(event, [])
-
-    assert lambdaResponse['statusCode'] == 412
-    assert '{"message": "missing or malformed query params"}' in lambdaResponse['body']
-
-
 def test_givenRequestWithErrorInDBThenReturnError500(lambda_environment):
     event = {
-        "resource": "/patient/{patient_id}/case/{case_id}",
-        "path": "/patient/123/case/123",
+        "resource": "/doctor/cases",
+        "path": "doctor/cases",
         "httpMethod": "GET",
         "pathParameters": {
-            "patient_id": "1234"
         },
         "isBase64Encoded": False
     }

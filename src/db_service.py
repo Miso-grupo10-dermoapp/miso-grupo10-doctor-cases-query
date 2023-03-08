@@ -1,14 +1,16 @@
 import boto3
-from boto3.dynamodb import conditions
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Attr
 
 import app
 
-def get_item(patient_id):
+def get_item():
     client = boto3.resource('dynamodb')
     try:
         table = client.Table(app.ENV_TABLE_NAME)
-        result = table.scan(FilterExpression=Attr('patient_id').contains(patient_id))
+        result = table.scan(
+              Select= 'ALL_ATTRIBUTES',
+              FilterExpression=Attr('status').eq('created')
+              )
         items = result['Items']
         if items:
             return items
