@@ -9,7 +9,7 @@ def get_item():
         table = client.Table(app.ENV_TABLE_NAME)
         result = table.scan(
               Select= 'ALL_ATTRIBUTES',
-              FilterExpression=Attr('status').eq('created') | Attr('status').eq('available')
+              FilterExpression=Attr('status').eq('Created'.) | Attr('status').eq('Available')
               )
         items = result['Items']
         if items:
